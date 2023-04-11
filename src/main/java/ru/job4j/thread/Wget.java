@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.regex.Pattern;
 
+import static java.lang.System.currentTimeMillis;
+
 public class Wget implements Runnable {
     private final String url;
     private final int speed;
@@ -20,11 +22,24 @@ public class Wget implements Runnable {
         String[] fileName = url.split("/");
         try (BufferedInputStream in = new BufferedInputStream(new URL(url).openStream());
              FileOutputStream fileOutputStream = new FileOutputStream("data/" + fileName[fileName.length - 1])) {
-            byte[] dataBuffer = new byte[speed];
+            byte[] dataBuffer = new byte[1024];
             int bytesRead;
-            while ((bytesRead = in.read(dataBuffer, 0, speed)) != -1) {
+            int downloadData = 0;
+            long startTime = currentTimeMillis();
+            long endTime;
+            int deltaTime;
+            while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
+                downloadData += bytesRead;
                 fileOutputStream.write(dataBuffer, 0, bytesRead);
-                Thread.sleep(1000);
+                if (downloadData >= speed) {
+                    endTime = currentTimeMillis();
+                    deltaTime = (int) (endTime - startTime);
+                    if (deltaTime < 1000) {
+                        Thread.sleep(1000 - deltaTime);
+                    }
+                    downloadData = 0;
+                    startTime = currentTimeMillis();
+                }
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -34,6 +49,9 @@ public class Wget implements Runnable {
     private static void validate(String[] args) {
         if (args.length == 0) {
             throw new IllegalArgumentException("Args is empty");
+        }
+        if (args.length != 2) {
+            throw new IllegalArgumentException("The number of arguments must be 2");
         }
         if (!Pattern.matches(".*\\..+\\/.*\\..+", args[0])) {
             throw new IllegalArgumentException("Incorrect url");
