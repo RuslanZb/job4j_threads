@@ -26,14 +26,12 @@ public class Wget implements Runnable {
             int bytesRead;
             int downloadData = 0;
             long startTime = currentTimeMillis();
-            long endTime;
-            int deltaTime;
             while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
                 downloadData += bytesRead;
                 fileOutputStream.write(dataBuffer, 0, bytesRead);
                 if (downloadData >= speed) {
-                    endTime = currentTimeMillis();
-                    deltaTime = (int) (endTime - startTime);
+                    long endTime = currentTimeMillis();
+                    int deltaTime = (int) (endTime - startTime);
                     if (deltaTime < 1000) {
                         Thread.sleep(1000 - deltaTime);
                     }
