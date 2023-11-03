@@ -29,13 +29,7 @@ public class AccountStorage {
     }
 
     public synchronized Optional<Account> getById(int id) {
-        Optional<Account> rsl = Optional.empty();
-        for (Account account : accounts.values()) {
-            if (account.id() == id) {
-                rsl = Optional.of(account);
-            }
-        }
-        return rsl;
+        return Optional.ofNullable(accounts.get(id));
     }
 
     public boolean transfer(int fromId, int toId, int amount) {
